@@ -25,7 +25,7 @@ type entry struct {
 }
 
 /* 为了通用性，这里允许值是实现了 Value 接口的任意类型，该接口只包含了一个方法 Len() int，用于返回值所占用的内存大小。不太理解。*/
-type value interface {
+type Value interface {
 	Len()	int													//使用len来计算它使用了多少字节
 }
 
@@ -59,7 +59,7 @@ func (c *Cache) RemoveOldest() {
 		delete(c.cache, kv.key)										//从字典c.cache中删除该节点的映射关系
 		c.nbytes -= int64(len(kv.key)) + int64(kv.value.Len())		//更新当前所用内存
 		if c.OnEvicted  != nil {									//如果回调函数不为nil,则调用回调函数
-			c.onEvicted(kv.key, kv.value)
+			c.OnEvicted(kv.key, kv.value)
 		}
 	}
 }

@@ -1,3 +1,10 @@
+package lru
+
+import (
+	//"reflect"
+	"testing"
+)
+
 type String string
 
 func (d String) Len() int {
