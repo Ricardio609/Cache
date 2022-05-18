@@ -1,5 +1,7 @@
 package lru
-
+/*
+ *Cache缓存淘汰策略：lru
+ */
 import "container/list"
 
 /*
