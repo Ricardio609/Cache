@@ -1,4 +1,4 @@
-package CACHE
+package geecache
 
 import (
 	"testing"

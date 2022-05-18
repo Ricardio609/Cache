@@ -3,7 +3,7 @@
  * byteview:只读，用来保存缓存值
  */
 
-package CACHE
+package geecache
 
 /* 不可变的字节视图 */
 type ByteView struct {

@@ -7,7 +7,7 @@
  *                           |  否
  *                           |-----> 调用`回调函数`，获取值并添加到缓存 --> 返回缓存值 ⑶
  */
-package CACHE
+package geecache
 
 import (
 	"fmt"

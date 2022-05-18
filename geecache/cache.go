@@ -5,10 +5,10 @@
  *实现：实例化lru，封装get与add方法，并添加互斥锁。
  */
 
- package CACHE
+ package geecache
  
  import (
-	 "CACHE/lru"
+	 "geecache/lru"
 	"sync"
  )
 
