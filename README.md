@@ -1,4 +1,4 @@
-# Cache
+# Cache(分布式缓存)
 
 goCache
 
