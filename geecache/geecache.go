@@ -10,6 +10,7 @@
 package geecache
 
 import (
+	"geecache/singleflight"
 	"fmt"
 	"log"
 	"sync"
@@ -31,11 +32,13 @@ func (f GetterFunc) Get(key string) ([]byte, error)  {		//实现Getter接口的G
 
 /* 一个Group可以看作是一个缓存的命名空间 */
 type Group struct {
-	name		string			//每个Group都有一个唯一的名称。比如可以创建两个 Group，缓存学生的成绩命名为 scores，缓存学生信息的命名为 info
-	getter		Getter			//缓存未命中时获取源数据的回调(callback)
-	mainCache	cache			//实现的并发缓存
+	name		string					//每个Group都有一个唯一的名称。比如可以创建两个 Group，缓存学生的成绩命名为 scores，缓存学生信息的命名为 info
+	getter		Getter					//缓存未命中时获取源数据的回调(callback)
+	mainCache	cache					//实现的并发缓存
 
 	peers		PeerPicker
+
+	loader		*singleflight.Group		//保证每个key只取一次
 }
 
 var (
@@ -54,6 +57,8 @@ func NewGroup(name string, cacheBytes int64, getter Getter) *Group  {
 		name:		name,
 		getter:		getter,
 		mainCache:	cache{cacheBytes: cacheBytes},
+
+		loader:		&singleflight.Group{},
 	}
 	groups[name] = g
 	return g
@@ -92,17 +97,28 @@ func (g *Group) RegisterPeers(peers PeerPicker) {
 	g.peers = peers
 }
 
-/* 使用 PickPeer() 方法选择节点，若非本机节点，则调用 getFromPeer() 从远程获取。若是本机节点或失败，则回退到 getLocally() */
+/* 使用 PickPeer() 方法选择节点，若非本机节点，则调用 getFromPeer() 从远程获取。若是本机节点或失败，则回退到 getLocally() 
+ * 将原有load逻辑用g.loader.Do包裹起来，实现并发场景下针对相同的 key，load 过程只会调用一次
+ */
 func (g *Group) load(key string) (value ByteView, err error) {
-	if g.peers != nil {
-		if peer, ok := g.peers.PickPeer(key); ok {
-			if value, err = g.getFromPeer(peer, key); err == nil {
-				return value, nil
+	//不管并发调用者的数量,每个密钥仅获取一次（本地或远程）
+
+	viewi, err := g.loader.Do(key, func() (interface{}, error) {
+		if g.peers != nil {
+			if peer, ok := g.peers.PickPeer(key); ok {
+				if value, err = g.getFromPeer(peer, key); err == nil {
+					return value, nil
+				}
+				log.Println("[GeeCache] failed to get from peer", err)
 			}
-			log.Println("[GeeCache] failed to get from peer", err)
 		}
+		return g.getLocally(key)
+	})
+
+	if err == nil {
+		return viewi.(ByteView), nil
 	}
-	return g.getLocally(key)
+	return
 }
 
 /* 实现了 PeerGetter 接口的 httpGetter 从访问远程节点，获取缓存值 */
