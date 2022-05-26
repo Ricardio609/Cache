@@ -14,13 +14,13 @@ goCache
 ```
 资源限制问题
 ```
-![image](https://user-images.githubusercontent.com/64991294/170391659-ee8a1009-47e1-4c2b-865d-ca7bd9272bd8.png)
+![image](https://user-images.githubusercontent.com/64991294/170398004-c5828fbc-8774-43bb-99f4-496c8c7b1ecc.png)
+
 
 
 2. 单机并发缓存
-![image](https://user-images.githubusercontent.com/64991294/170391758-f9265e19-6641-4e72-b388-ebd9d284dc0d.png)
-实现多个缓存表
-核心数据结构：group
+ * 实现多个缓存表
+ * 核心数据结构：group
 
 3. HTTP服务端
 4. 一致性哈希（consistent hashing)
@@ -28,7 +28,6 @@ goCache
 ```
 远程节点选择问题。
 ```
-![image](https://user-images.githubusercontent.com/64991294/170392063-816718c8-8843-4ed0-9445-3ed49d5ea8bf.png)
 
 
 * consistent hashing 是从单节点走向分布式的一个重要环节(对于给定的key, 每一次都选择同一个节点）
